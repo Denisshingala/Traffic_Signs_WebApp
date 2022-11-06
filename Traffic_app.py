@@ -54,13 +54,14 @@ classes = { 0:'Speed limit (20km/h)',
 
 def image_processing(img):
     model = load_model('./model/TSR.h5')
-    data=[]
     image = Image.open(img)
     image = image.resize((30,30))
-    data.append(np.array(image))
-    X_test=np.array(data)
-    Y_pred = model.predict_classes(X_test)
-    return Y_pred
+    image = np.expand_dims(image, axis=0)
+    image = np.array(image)
+    predict_x=model.predict(image)
+    classes_x=np.argmax(predict_x,axis=1)
+    sign = classes[int(classes_x)]
+    return sign
 
 @app.route('/')
 def index():
@@ -75,9 +76,7 @@ def upload():
         f.save(file_path)
         # Make prediction
         result = image_processing(file_path)
-        s = [str(i) for i in result]
-        a = int("".join(s))
-        result = "Predicted Traffic🚦Sign is: " +classes[a]
+        result = "Predicted Traffic🚦Sign is: " +result
         os.remove(file_path)
         return result
     return None
